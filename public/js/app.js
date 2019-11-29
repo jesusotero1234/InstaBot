@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const generator = require('generate-password');
 const scrollPageToBottom = require('puppeteer-autoscroll-down')
 const URL = 'https://www.instagram.com'
 const BOTURL = 'https://tempmail.net/en/'
@@ -214,6 +215,11 @@ const instagram = {
             let username = email.substr(0, number)
             return username
         })
+
+        const password = generator.generate({
+            length: 10,
+            numbers: true
+        });
         // go to Instgram
         await instagram.page.goto(URL, { waitUntil: 'networkidle2' });
         await instagram.page.waitFor(1000)
@@ -222,7 +228,7 @@ const instagram = {
         await instagram.page.type('input[name="emailOrPhone"]', email, { delay: 50 })
         await instagram.page.type('input[name="fullName"]', getUserName(email), { delay: 50 })
         await instagram.page.type('input[name="username"]', getUserName(email), { delay: 50 })
-        await instagram.page.type('input[name="password"]', '147369', { delay: 50 })
+        await instagram.page.type('input[name="password"]', password, { delay: 50 })
        
         try {
             const buttonArray = await instagram.page.$x('//button[contains(text(),"Sign up")]')
