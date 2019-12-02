@@ -115,64 +115,84 @@ const instagram = {
         //Iterate between photos
 
 
-        try{
-        for (let index = 0; countLikes <= 15; index++) {
-            await instagram.page.waitFor('article > div:nth-child(1) img[decoding="auto"]',{timeout: 500})
-            AllPictures
-            countLikes
-            countAlreadyLiked
-            await AllPictures[index].click()
-            try {
+        try {
+            for (let index = 0; countLikes <= 30; index++) {
+                await instagram.page.waitFor('article > div:nth-child(1) img[decoding="auto"]', { timeout: 500 })
+                AllPictures = await instagram.page.$$('article > div:nth-child(1) img[decoding="auto"]')
+                console.log(AllPictures)
+                countLikes
+                countAlreadyLiked
+                await AllPictures[index].click()
 
-                await instagram.page.waitFor('span[class="fr66n"]>button>span[aria-label="Like"]', { timeout: 3000 })
-                let like = await instagram.page.$eval('span[class="fr66n"]>button>span[aria-label="Like"]',(el)=>{el.click()})
-               await instagram.page.waitFor(2000)
-                countLikes += 1
+                //scroll
+                await instagram.page.waitFor('main[role="main"]')
 
-            } catch (error) {
-                console.log('Has been already Liked')
-                countAlreadyLiked += 1
-            }
-
-            try {
+                await instagram.page.$eval('main[role="main"]',(el)=>{el.scrollIntoView({ behavior: 'smooth', block: 'end' })})
                 await instagram.page.waitFor(2000)
-                await instagram.page.waitFor('//h3[contains(text(),"Action Blocked")]', { timeout: 1000 })
-                await instagram.page.$x('//h3[contains(text(),"Action Blocked")]')
-                let checkActionBlocked = await instagram.page.$x(instagram.page.$x('//button[contains(text(),"OK")]'))
-                await checkActionBlocked[0].click()
-                await exit2[0].click()
-                //check if bot has been blocked by IG
-            } catch (error) {
-                console.log('Action has not been blocked')
-                await instagram.page.waitFor('//button[contains(text(),"Close")]', { timeout: 1000 })
-                let exit = await instagram.page.$x('//button[contains(text(),"Close")]')
-                await exit[0].click()
 
-            }
+                try {
+
+                    await instagram.page.waitFor('span[class="fr66n"]>button>span[aria-label="Like"]', { timeout: 3000 })
+                    let like = await instagram.page.$eval('span[class="fr66n"]>button>span[aria-label="Like"]', (el) => { el.click() })
+                    await instagram.page.waitFor(2000)
+                    countLikes += 1
+
+                } catch (error) {
+                    console.log('Has been already Liked')
+                    countAlreadyLiked += 1
+                }
+
+                try {
+                    await instagram.page.waitFor(2000)
+                    await instagram.page.waitFor('//h3[contains(text(),"Action Blocked")]', { timeout: 1000 })
+                    await instagram.page.$x('//h3[contains(text(),"Action Blocked")]')
+                    let checkActionBlocked = await instagram.page.$x(instagram.page.$x('//button[contains(text(),"OK")]'))
+                    await checkActionBlocked[0].click()
+                    await exit2[0].click()
+                    //check if bot has been blocked by IG
+                } catch (error) {
+                    console.log('Action has not been blocked')
+                    await instagram.page.waitFor('//button[contains(text(),"Close")]', { timeout: 1000 })
+                    let exit = await instagram.page.$x('//button[contains(text(),"Close")]')
+                    await exit[0].click()
+
+                }
 
 
-            //Exit Picture
-            try {
-                // await instagram.page.waitFor(1000)
-                await instagram.page.waitFor('//button[contains(text(),"Close")]', { timeout: 1000 })
-                let exit = await instagram.page.$x('//button[contains(text(),"Close")]')
-                await exit[0].click()
-            }
-            catch{ console.log('Close button has been pressed already') }
-                await instagram.page.waitFor('main[role="main"]',{timeout: 300})
+                //Exit Picture
+                try {
+                    // await instagram.page.waitFor(1000)
+                    await instagram.page.waitFor('//button[contains(text(),"Close")]', { timeout: 1000 })
+                    let exit = await instagram.page.$x('//button[contains(text(),"Close")]')
+                    await exit[0].click()
+                }
+                catch{ console.log('Close button has been pressed already') }
+                
+                //scroll page
+              
             
-             
-            // debugger
+            
+                console.log(index)
+
+            }
             await instagram.page.waitFor(5000)
+
+
+
+        } catch (error) {
+            console.log(error)
+            console.log(`liked photos =${countLikes}, photos already liked = ${countAlreadyLiked}`)
+
+            //Send to firebase
+            instagramUser.photosLiked = countLikes
+            instagramUser.photosAlreadyLiked = countAlreadyLiked
+
         }
-    }catch{
         console.log(`liked photos =${countLikes}, photos already liked = ${countAlreadyLiked}`)
-        
+
         //Send to firebase
         instagramUser.photosLiked = countLikes
         instagramUser.photosAlreadyLiked = countAlreadyLiked
-
-    }
     }),
 
     usernameFollow: (async (userSearch) => {
@@ -230,7 +250,7 @@ const instagram = {
         } catch{ console.log('not working', userRegistry) }
 
         //Send to Firebase
-        instagramUser.Followers = userRegistry
+        instagramUser.followers = userRegistry
         instagramUser.usernameFollow = userSearch
 
 
@@ -295,10 +315,10 @@ const instagram = {
             const buttonArray1 = await instagram.page.$eval('div[role="dialog"] >div button[class*="sqdOP"]', (el) => (el.click()))
         } catch{ console.log('Bot ready or failed caused IG blocked the IP') }
         // await instagram.page.waitFor('//input[contains(text(),"18 or older"',{timeout: 1000})
-       
+
         try {
             await instagram.page.waitFor(4000)
-            await instagram.page.waitFor('//button[text()="Not Now"]',{timeout:500})
+            await instagram.page.waitFor('//button[text()="Not Now"]', { timeout: 500 })
             let clickNotNow = await instagram.page.$x('//button[text()="Not Now"]');
             if (clickNotNow) { await clickNotNow[0].click() }
         } catch (error) { }
@@ -306,12 +326,13 @@ const instagram = {
         await instagram.page.waitFor(500)
         const check = await instagram.page.$x('//p[text()="Sorry, something went wrong creating your account. Please try again soon."]')
 
-           if(check ){
-            instagramUser.botUsername= 'robocop20190'
-            instagram.botPassword= '147369'
-            throw new Error('Not possible to create Bot now')}
-            
-   
+        if (check) {
+            instagramUser.botUsername = 'robocop20190'
+            instagram.botPassword = '147369'
+            throw new Error('Not possible to create Bot now')
+        }
+
+
 
     })
 }
